@@ -678,22 +678,22 @@
     </div>
 
     <h1 class="hero-headline">
-      Your AI agent<br />
-      <span class="gradient-text">finally has memory.</span>
+      Stop paying for tokens<br />
+      <span class="gradient-text">your AI already knew.</span>
     </h1>
 
     <p class="hero-sub">
-      A persistent, searchable, privacy-first brain for AI coding agents. 
-      Local SQLite. Zero API costs. Works with Claude, Cursor, and every MCP-compatible tool.
+      mcp-ai-brain gives your AI agent persistent memory — across every session, every project, every conversation. 
+      <strong style="color:var(--text)">Cut context costs by up to 80%.</strong> Local SQLite. Zero API overhead. One config line.
     </p>
 
     <div class="hero-actions">
       <a href="https://github.com/nawkarpravinp-bit/mcp-ai-brain" class="btn-primary" target="_blank" rel="noopener noreferrer">
-        View on GitHub
+        Get Started Free
         <span class="icon-wrap">↗</span>
       </a>
       <a href="https://www.npmjs.com/package/mcp-ai-brain" class="btn-secondary" target="_blank" rel="noopener noreferrer">
-        npm install ↗
+        npm install mcp-ai-brain ↗
       </a>
     </div>
 
@@ -709,7 +709,6 @@
           &nbsp;&nbsp;<span class="code-punc">}</span><br />
           <span class="code-punc">}</span><br />
           <br />
-          <span class="code-comment">// That's it. Your AI now remembers everything. 🧠</span>
         </div>
       </div>
     </div>
@@ -718,13 +717,15 @@
   <!-- Stats -->
   <div class="stats-bar">
     <div class="stats-bar-inner">
+      <div class="stat-item" style="position:relative; overflow:hidden;">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(79,248,210,0.08),rgba(124,111,255,0.08));pointer-events:none;"></div>
+        <div class="stat-num" style="font-size:42px;">↓80%</div>
+        <div class="stat-label" style="color:var(--accent2); font-weight:700; font-size:13px;">Token Cost Reduction</div>
+        <div style="font-size:10px;color:var(--faint);margin-top:4px;">Stop re-explaining. Start remembering.</div>
+      </div>
       <div class="stat-item">
         <div class="stat-num">$0</div>
         <div class="stat-label">API Cost / Month</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">13+</div>
-        <div class="stat-label">Memory Tools</div>
       </div>
       <div class="stat-item">
         <div class="stat-num">&lt;5ms</div>
@@ -737,11 +738,22 @@
     </div>
   </div>
 
+  <!-- Dashboard Preview -->
+  <div style="position:relative;z-index:1;padding:0 24px 100px;max-width:1200px;margin:0 auto;">
+    <p class="section-eyebrow" style="text-align:center;">Live Dashboard</p>
+    <h2 style="font-size:clamp(28px,3vw,44px);font-weight:800;letter-spacing:-0.04em;text-align:center;margin-bottom:12px;">Watch your token savings <span class="gradient-text">compound in real-time.</span></h2>
+    <p style="font-size:16px;color:var(--muted);text-align:center;max-width:520px;margin:0 auto 48px;">The built-in dashboard shows every memory, every project, and exactly how many tokens you've saved today.</p>
+    <div style="border-radius:24px;border:1px solid var(--border);background:rgba(255,255,255,0.02);padding:3px;box-shadow:0 40px 120px rgba(0,0,0,0.5);">
+      <img src="./dashboard-preview.png" alt="mcp-ai-brain live dashboard showing 2,847 tokens saved today, memory list with categories and decay scores" style="width:100%;border-radius:22px;display:block;" loading="lazy" />
+    </div>
+    <p style="font-size:12px;color:var(--faint);text-align:center;margin-top:16px;">Real-time monitoring · Memory decay scores · Token savings chart · Project filtering</p>
+  </div>
+
   <!-- Features Bento -->
   <section id="features">
     <p class="section-eyebrow">Features</p>
-    <h2 class="section-title">Memory that works<br />like your brain.</h2>
-    <p class="section-sub">Not just key-value storage. A full memory system with decay, categorization, project scoping, and hybrid semantic search.</p>
+    <h2 class="section-title">Not a chatbot hack.<br /><span class="gradient-text">A real memory engine.</span></h2>
+    <p class="section-sub">Every session, your AI starts knowing exactly what it knew last time. Decisions, bugs, architecture, config — all searchable in under 5ms. No re-explaining. No wasted tokens. Ever.</p>
 
     <div class="bento">
 
@@ -1018,17 +1030,22 @@
         <div class="cta-card-inner">
           <div class="eyebrow" style="margin: 0 auto 24px; opacity:1; transform:none;">
             <span class="pulse"></span>
-            Open Source · MIT License
+            Free &amp; Open Source · MIT License · Zero API Costs
           </div>
-          <h2 class="cta-title">Give your AI <span class="gradient-text">a brain.</span></h2>
-          <p class="cta-sub">One config line. Zero API costs. Persistent memory that makes your AI agent 10× more productive from session one.</p>
+          <h2 class="cta-title">Your AI is forgetting<br /><span class="gradient-text">$100s in context every month.</span></h2>
+          <p class="cta-sub">Every session you re-explain your stack, your decisions, your bugs. That's wasted tokens. Wasted time. Wasted money. Install mcp-ai-brain in 60 seconds and it never forgets again.</p>
+          <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:32px;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);"><span style="color:var(--accent2);font-size:18px;">✓</span> Works with Claude, Cursor, Windsurf</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);"><span style="color:var(--accent2);font-size:18px;">✓</span> SQLite — no cloud, no subscription</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);"><span style="color:var(--accent2);font-size:18px;">✓</span> Up &amp; running in 60 seconds</div>
+          </div>
           <div class="cta-actions">
             <a href="https://github.com/nawkarpravinp-bit/mcp-ai-brain" class="btn-primary" target="_blank" rel="noopener noreferrer">
-              Star on GitHub
+              Get Started Free
               <span class="icon-wrap">⭐</span>
             </a>
             <a href="https://www.npmjs.com/package/mcp-ai-brain" class="btn-secondary" target="_blank" rel="noopener noreferrer">
-              View on npm ↗
+              npm install mcp-ai-brain ↗
             </a>
           </div>
         </div>
