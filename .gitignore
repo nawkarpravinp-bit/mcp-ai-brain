@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Database files — YOUR MEMORY IS PRIVATE
+*.db
+*.db-wal
+*.db-shm
+brain.db
+
+# Embedding model cache
+.transformers-cache/
+models/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*

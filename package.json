@@ -1,0 +1,51 @@
+{
+  "name": "mcp-ai-brain",
+  "version": "1.0.0",
+  "description": "Local-first persistent memory for AI agents. SQLite + hybrid search (FTS5 + vector). Zero API costs. Works with any MCP-compatible agent.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-ai-brain": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "dashboard": "tsx src/dashboard.ts",
+    "test": "node --test dist/tests/*.test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "memory",
+    "ai",
+    "agent",
+    "persistent-memory",
+    "sqlite",
+    "vector-search",
+    "fts5",
+    "claude",
+    "cursor",
+    "local-first"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nawkarpravinp-bit/mcp-ai-brain.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "sql.js": "^1.12.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "@types/sql.js": "^1.4.11",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
