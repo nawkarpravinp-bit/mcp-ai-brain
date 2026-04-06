@@ -33,6 +33,7 @@ import {
 } from "./tools/projects.js";
 import { autoLearn } from "./auto-learn.js";
 import { proactiveSessionStart } from "./proactive-context.js";
+import { warmupEmbeddings } from "./embeddings.js";
 
 // ──────────────────────────────────────────────────
 // Tool Definitions
@@ -385,9 +386,13 @@ async function main() {
   migrate(db);
   persistDb();
 
+  // Pre-warm embedding model in background (no-op if @xenova/transformers not installed)
+  // Ensures model is ready before first brain_remember call arrives
+  warmupEmbeddings();
+
   // Create MCP server
   const server = new Server(
-    { name: "mcp-ai-brain", version: "1.1.0" },
+    { name: "mcp-ai-brain", version: "1.1.1" },
     { capabilities: { tools: {} } }
   );
 
@@ -411,7 +416,7 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  console.error(`🧠 mcp-ai-brain v1.1.0 | DB: ${resolveDbPath()}`);
+  console.error(`🧠 mcp-ai-brain v1.1.1 | DB: ${resolveDbPath()}`);
 }
 
 main().catch((error) => {
