@@ -134,6 +134,22 @@ const MIGRATIONS: Migration[] = [
       );
     },
   },
+  {
+    version: 3,
+    description: "Add local embedding vector column (v1.1 — transformers.js)",
+    up: (db) => {
+      // Add embedding BLOB column — nullable, populated lazily by embeddings.ts
+      // Existing rows get NULL and are indexed on next brain_remember call
+      const cols = db.exec("PRAGMA table_info(memories)");
+      const hasEmbedding =
+        cols.length > 0 &&
+        cols[0].values.some((row) => row[1] === "embedding");
+
+      if (!hasEmbedding) {
+        db.run("ALTER TABLE memories ADD COLUMN embedding BLOB");
+      }
+    },
+  },
 ];
 
 /**

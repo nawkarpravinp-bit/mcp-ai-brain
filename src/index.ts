@@ -220,11 +220,11 @@ const TOOL_DEFINITIONS = [
 // Tool Handler
 // ──────────────────────────────────────────────────
 
-function handleTool(
+async function handleTool(
   db: SqlJsDatabase,
   name: string,
   args: Record<string, unknown>
-): { content: Array<{ type: "text"; text: string }>; isError?: boolean } {
+): Promise<{ content: Array<{ type: "text"; text: string }>; isError?: boolean }> {
   const json = (data: unknown) => ({
     content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
   });
@@ -248,7 +248,7 @@ function handleTool(
     }
 
     case "brain_search": {
-      const results = search(db, args as unknown as Parameters<typeof search>[1]);
+      const results = await search(db, args as unknown as Parameters<typeof search>[1]);
       persistDb();
       return json({ count: results.length, results });
     }
@@ -387,7 +387,7 @@ async function main() {
 
   // Create MCP server
   const server = new Server(
-    { name: "mcp-ai-brain", version: "1.2.0" },
+    { name: "mcp-ai-brain", version: "1.1.0" },
     { capabilities: { tools: {} } }
   );
 
@@ -411,7 +411,7 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  console.error(`🧠 mcp-ai-brain v1.2.0 | DB: ${resolveDbPath()}`);
+  console.error(`🧠 mcp-ai-brain v1.1.0 | DB: ${resolveDbPath()}`);
 }
 
 main().catch((error) => {

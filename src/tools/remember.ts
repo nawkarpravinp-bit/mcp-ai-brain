@@ -1,8 +1,13 @@
 /**
- * Tool: remember — Store a memory (sql.js compatible)
+ * Tool: remember — Store a memory with local embedding (v1.1)
+ *
+ * Stores the memory synchronously, then fire-and-forgets an async
+ * embedding generation. If @xenova/transformers isn't available,
+ * the memory stores fine with NULL embedding — graceful degradation.
  */
 
 import type { SqlJsDatabase } from "../db.js";
+import { persistDb } from "../db.js";
 import { indexMemoryKeywords } from "../schema.js";
 
 export interface RememberInput {
@@ -62,7 +67,7 @@ export function remember(
     };
   }
 
-  // Insert the memory
+  // Insert the memory (embedding stored separately, async)
   const tagsJson = JSON.stringify(tags);
   db.run(
     `INSERT INTO memories (content, project, category, tags, importance)
@@ -74,8 +79,24 @@ export function remember(
   const idResult = db.exec("SELECT last_insert_rowid()");
   const memoryId = idResult[0].values[0][0] as number;
 
-  // Index keywords for search
+  // Index keywords for fast keyword search
   indexMemoryKeywords(db, memoryId, content, tagsJson);
+
+  // Fire-and-forget: generate local embedding and store it (v1.1)
+  // Does not block the MCP response — updates DB in background
+  void (async () => {
+    try {
+      const embeddings = await import("../embeddings.js");
+      const embedding = await embeddings.generateEmbedding(content);
+      if (!embedding) return; // Model not available yet
+
+      const blob = embeddings.serializeEmbedding(embedding);
+      db.run("UPDATE memories SET embedding = ? WHERE id = ?", [blob, memoryId]);
+      persistDb(); // Flush to disk after embedding update
+    } catch {
+      // Never throw — embedding is optional
+    }
+  })();
 
   return {
     id: memoryId,

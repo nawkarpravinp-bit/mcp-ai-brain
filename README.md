@@ -12,11 +12,14 @@ A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that g
 
 | Feature | Description |
 |---------|-------------|
-| 🔍 **Hybrid Search** | FTS5 keyword matching + optional sqlite-vec vector similarity, fused with Reciprocal Rank Fusion |
+| 🔍 **Hybrid Search** | Keyword (FTS5) + local vector embeddings via `all-MiniLM-L6-v2`, fused with RRF |
 | 🧬 **Memory Decay** | Ebbinghaus-inspired forgetting curve — unused memories lose relevance, critical ones never fade |
 | 📂 **Project Scoping** | Memories are scoped to projects — your web app context stays separate from your CLI tool context |
 | 🔒 **Privacy-First** | Everything stays on your machine. No cloud. No API calls. Your `brain.db` never leaves `~/.mcp-ai-brain/` |
-| ⚡ **Zero Cost** | No embeddings API needed. Runs entirely on SQLite. Optional local embeddings in v1.1 |
+| ⚡ **Zero Cost** | No embeddings API needed. Runs `all-MiniLM-L6-v2` locally via `@xenova/transformers` (~25MB, downloads once) |
+| 🤖 **Auto-Learning** | `brain_session_end` extracts facts automatically from your session summary. No manual `remember` calls needed |
+| 🎯 **Proactive Context** | `brain_session_start_smart` detects your workspace and loads the right memories automatically |
+| 🌐 **Dashboard** | Built-in web dashboard at `localhost:3333` — view, search, edit memories in real-time |
 | 🔌 **Universal** | Works with Claude Desktop, Cursor, Windsurf, Cline, Antigravity, and any MCP-compatible tool |
 
 ---
@@ -61,7 +64,7 @@ Importance: critical (never decays) | high | normal | low
 Retrieve memories by project, category, or importance — without needing a search query.
 
 ### `brain_search`
-Hybrid search across all memories using FTS5 keyword matching. Returns ranked results with decay-adjusted scoring.
+Hybrid search using keyword matching (FTS5) + local vector embeddings (`all-MiniLM-L6-v2`). Results fused with Reciprocal Rank Fusion — semantic similarity works out of the box once the model downloads (~25MB, one-time).
 
 ### `brain_forget`
 Soft-delete a memory. It's excluded from search but can be restored.
@@ -111,8 +114,8 @@ Memories follow a biological forgetting curve:
 ┌────────────▼────────────────────┐
 │       mcp-ai-brain server       │
 │  ┌──────────┐  ┌─────────────┐  │
-│  │ FTS5     │  │ sqlite-vec  │  │
-│  │ (keyword)│  │ (vector)    │  │
+│  │ FTS5     │  │ MiniLM-L6v2 │  │
+│  │ (keyword)│  │ (local vec) │  │
 │  └────┬─────┘  └──────┬──────┘  │
 │       │    RRF Fusion  │        │
 │       └───────┬────────┘        │
@@ -123,6 +126,10 @@ Memories follow a biological forgetting curve:
 │  ┌──────────────────────────┐   │
 │  │  Decay Engine            │   │
 │  │  (Ebbinghaus curve)      │   │
+│  └──────────────────────────┘   │
+│  ┌──────────────────────────┐   │
+│  │  Auto-Learning (v1.1)    │   │
+│  │  Session summary → facts │   │
 │  └──────────────────────────┘   │
 └─────────────────────────────────┘
 ```
@@ -145,10 +152,10 @@ Memories follow a biological forgetting curve:
 
 ## 🗺️ Roadmap
 
-- [x] v1.0 — Core memory + FTS5 search + decay engine
-- [ ] v1.1 — Local embeddings (transformers.js) + auto-extraction
-- [ ] v1.2 — Web dashboard + multi-agent support
-- [ ] v2.0 — Relationship graph + proactive suggestions
+- [x] v1.0 — Core memory + keyword search (FTS5) + Ebbinghaus decay engine
+- [x] v1.1 — Local embeddings (`all-MiniLM-L6-v2` via `@xenova/transformers`) + Auto-Learning + Proactive Context + Web Dashboard
+- [ ] v1.2 — Multi-agent support + relationship graph between memories
+- [ ] v2.0 — Proactive suggestions + memory consolidation + export/import
 
 ---
 

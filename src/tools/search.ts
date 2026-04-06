@@ -1,5 +1,5 @@
 /**
- * Tool: search — Hybrid search (sql.js compatible)
+ * Tool: search — Hybrid search (keyword + local vector embeddings)
  */
 
 import type { SqlJsDatabase } from "../db.js";
@@ -12,7 +12,7 @@ export interface SearchInput {
   limit?: number;
 }
 
-export function search(db: SqlJsDatabase, input: SearchInput): SearchResult[] {
+export async function search(db: SqlJsDatabase, input: SearchInput): Promise<SearchResult[]> {
   return hybridSearch(db, input.query, {
     project: input.project ?? null,
     limit: input.limit ?? 10,

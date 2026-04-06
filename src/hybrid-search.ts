@@ -9,6 +9,7 @@ import type { SqlJsDatabase } from "./db.js";
 import { touchMemory } from "./decay.js";
 import { extractKeywords } from "./schema.js";
 
+
 export interface SearchResult {
   id: number;
   content: string;
@@ -94,32 +95,49 @@ function keywordSearch(
 }
 
 /**
- * LIKE-based fallback search for when keyword index misses.
+ * Vector similarity search using stored local embeddings.
+ * Uses dynamic import so it degrades gracefully without @xenova/transformers.
  */
-function likeSearch(
+async function vectorSearch(
   db: SqlJsDatabase,
   query: string,
   project: string | null,
   limit: number
-): number[] {
-  let sql = `
-    SELECT id FROM memories
-    WHERE content LIKE ? AND status = 'active'
-  `;
-  const params: (string | number)[] = [`%${query}%`];
+): Promise<Array<{ id: number; similarity: number }>> {
+  try {
+    // Dynamic import — graceful if @xenova/transformers not installed
+    const embeddings = await import("./embeddings.js");
+    const queryEmbedding = await embeddings.generateEmbedding(query);
+    if (!queryEmbedding) return []; // Model not loaded yet
 
-  if (project) {
-    sql += " AND project = ?";
-    params.push(project);
+    let sql = `SELECT id, embedding FROM memories WHERE status = 'active' AND embedding IS NOT NULL`;
+    const params: (string | number)[] = [];
+
+    if (project) {
+      sql += " AND project = ?";
+      params.push(project);
+    }
+
+    const result = db.exec(sql, params);
+    if (result.length === 0 || result[0].values.length === 0) return [];
+
+    const scored: Array<{ id: number; similarity: number }> = [];
+
+    for (const row of result[0].values) {
+      const id = row[0] as number;
+      const blob = row[1] as Uint8Array | null;
+      if (!blob) continue;
+
+      const storedEmbedding = embeddings.deserializeEmbedding(blob);
+      const similarity = embeddings.cosineSimilarity(queryEmbedding, storedEmbedding);
+      scored.push({ id, similarity });
+    }
+
+    scored.sort((a, b) => b.similarity - a.similarity);
+    return scored.slice(0, limit * 2);
+  } catch {
+    return []; // Always degrade gracefully
   }
-
-  sql += " ORDER BY decay_score DESC, access_count DESC LIMIT ?";
-  params.push(limit);
-
-  const result = db.exec(sql, params);
-  if (result.length === 0) return [];
-
-  return result[0].values.map((row: (string | number | null | Uint8Array)[]) => row[0] as number);
 }
 
 /**
@@ -151,9 +169,9 @@ function getMemoryById(db: SqlJsDatabase, id: number): MemoryRow | null {
 }
 
 /**
- * Hybrid search — keyword + LIKE fallback, scored with RRF + boosts.
+ * Hybrid search — keyword + vector, fused with RRF + boosts.
  */
-export function hybridSearch(
+export async function hybridSearch(
   db: SqlJsDatabase,
   query: string,
   options: {
@@ -161,67 +179,33 @@ export function hybridSearch(
     limit?: number;
     category?: string;
   } = {}
-): SearchResult[] {
+): Promise<SearchResult[]> {
   const { project = null, limit = 10, category } = options;
 
-  // Run keyword search
-  const kwResults = keywordSearch(db, query, project, limit);
+  const [kwResults, vecResults] = await Promise.all([
+    Promise.resolve(keywordSearch(db, query, project, limit)),
+    vectorSearch(db, query, project, limit)
+  ]);
 
-  // If keyword search returned few results, supplement with LIKE
-  const kwIds = new Set(kwResults.map((r) => r.id));
-  let likeIds: number[] = [];
+  const rrfMap = new Map<number, number>();
+  const k = 60;
 
-  if (kwResults.length < limit) {
-    likeIds = likeSearch(db, query, project, limit).filter(
-      (id) => !kwIds.has(id)
-    );
-  }
+  kwResults.forEach((r, i) => rrfMap.set(r.id, (rrfMap.get(r.id) || 0) + 1 / (k + i + 1)));
+  vecResults.forEach((r, i) => rrfMap.set(r.id, (rrfMap.get(r.id) || 0) + 1 / (k + i + 1)));
 
-  // Score all results
-  const scored: Array<{ id: number; score: number }> = [];
-  const maxMatchCount = Math.max(...kwResults.map((r) => r.matchCount), 1);
-
-  // Keyword results get higher base score
-  for (const kw of kwResults) {
-    scored.push({
-      id: kw.id,
-      score: (kw.matchCount / maxMatchCount) * 0.7, // 70% weight to keyword relevance
-    });
-  }
-
-  // LIKE results get lower base score
-  for (let i = 0; i < likeIds.length; i++) {
-    scored.push({
-      id: likeIds[i],
-      score: 0.3 / (i + 1), // Diminishing score for LIKE results
-    });
-  }
-
-  // Fetch full data and apply boosts
   const results: SearchResult[] = [];
-
-  for (const item of scored) {
-    const memory = getMemoryById(db, item.id);
-    if (!memory) continue;
-    if (category && memory.category !== category) continue;
+  for (const [id, score] of Array.from(rrfMap.entries()).sort((a, b) => b[1] - a[1])) {
+    const memory = getMemoryById(db, id);
+    if (!memory || (category && memory.category !== category)) continue;
 
     const recency = recencyBoost(memory.created_at);
     const frequency = frequencyBoost(memory.access_count);
-
-    const finalScore =
-      (item.score * 0.6 + recency * 0.2 + frequency * 0.2) *
-      memory.decay_score;
+    const finalScore = (score * 0.6 + recency * 0.2 + frequency * 0.2) * memory.decay_score;
 
     touchMemory(db, memory.id);
-
-    results.push({
-      ...memory,
-      score: finalScore,
-    });
+    results.push({ ...memory, score: finalScore });
   }
 
-  // Sort by score descending
-  results.sort((a, b) => b.score - a.score);
   return results.slice(0, limit);
 }
 
